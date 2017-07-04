@@ -18,14 +18,13 @@ app.get("/urls", function(req, res){
   res.render("../urls_index", templateVar);
 });
 
-// app.get("/urls.json", function(req, res){
-//   res.json(urlDatabase);
-// });
-
-app.get("/hello", function(req, res) {
-  res.end("<html><body><h1>Hello</h1>></body></html>\n");
+app.get("/urls/:id", function(req, res) {
+  let templateVar = {
+    shortURL: req.params.id,
+    urls: urlDatabase
+  };
+  res.render("../urls_show", templateVar);
 });
-
 
 
 app.listen(port, function(){

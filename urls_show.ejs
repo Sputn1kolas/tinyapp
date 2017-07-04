@@ -2,9 +2,13 @@
 <html lang="en">
   <head>
     <title>TinyApp</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   </head>
   <body>
      <% include partials/_header %>
-     <h1> Hello </h1> <!-- Add your EJS code here -->
+     <h1> Hello </h1>
+     <h4 class="list-group-item-heading"> <%= urls[shortURL] %> </h4>
+          <p>Shortened link: <%= shortURL %> </p>
+          <br>
   </body>
 </html>
