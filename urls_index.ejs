@@ -13,7 +13,12 @@
             <h4 class="list-group-item-heading"> <%= urls[link] %></h4>
           </a>
           <p>Shortened link: <%= link %> </p>
-          <button type="button" class=".btn-danger" action="/urls" method="POST"> Delete </button>
+
+      <form action="/urls/<%= link %>/delete" method="POST">
+        <button type="submit" class=".btn-danger" id="shortURL" >
+      </form>
+
+
           <br>
        <% } %>
          <div class="input-group input-group-lg">

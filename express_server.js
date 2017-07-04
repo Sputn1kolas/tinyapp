@@ -47,14 +47,19 @@ app.get("/urls/:id", function(req, res) {
   res.render("../urls_show", templateVar);
 });
 
-
 // posts
 app.post("/urls", (req, res) => {
   console.log(req.body["longURL"]) // debug statement to see POST parameters
   urlDatabase[generateRandomString()] = req.body["longURL"];
-  es.redirect("/urls")
+  res.redirect("/urls")
   console.log("302")
 });
+
+app.post("/urls/:id/delete", (req, res) => {
+    delete urlDatabase[req.params.id]
+    console.log("deleted...")
+    res.redirect("/urls")
+})
 
 app.get("/u/:shortURL", (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL]);
