@@ -52,6 +52,8 @@ app.get("/urls/:id", function(req, res) {
 app.post("/urls", (req, res) => {
   console.log(req.body["longURL"]) // debug statement to see POST parameters
   urlDatabase[generateRandomString()] = req.body["longURL"];
+  es.redirect("/urls")
+  console.log("302")
 });
 
 app.get("/u/:shortURL", (req, res) => {
