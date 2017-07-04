@@ -54,6 +54,10 @@ app.post("/urls", (req, res) => {
   urlDatabase[generateRandomString()] = req.body["longURL"];
 });
 
+app.get("/u/:shortURL", (req, res) => {
+  res.redirect(urlDatabase[req.params.shortURL]);
+});
+
 
 // get app to listen on port 8080
 app.listen(port, function(){

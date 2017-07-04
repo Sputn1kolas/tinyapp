@@ -7,8 +7,10 @@
   <body>
      <% include partials/_header %>
      <h1> Hello </h1>
-     <h4 class="list-group-item-heading"> <%= urls[shortURL] %> </h4>
-          <p>Shortened link: <%= shortURL %> </p>
-          <br>
+     <a href=<%= urls[shortURL] %>>
+      <h4 class="list-group-item-heading"> <%= urls[shortURL] %> </h4>
+     </a>
+      <p>Shortened link: <%= shortURL %> </p>
+      <br>
   </body>
 </html>

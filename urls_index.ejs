@@ -9,7 +9,9 @@
     <div class="span 6">
       <h1> Hello </br></h1>
       <% for(link in urls) { %>
-          <h4 class="list-group-item-heading"> <%= urls[link] %></h4>
+          <a href=<%= urls[link] %>>
+            <h4 class="list-group-item-heading"> <%= urls[link] %></h4>
+          </a>
           <p>Shortened link: <%= link %> </p>
           <br>
        <% } %>
