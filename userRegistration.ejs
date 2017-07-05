@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>TinyApp</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  </head>
+  <body>
+     <% include partials/_header %>
+     <div style="margin: 10% 20% 0 20%">
+     Good News Everyone! You can register as a user!
+     <div class="panel panel-default" >
+          <div class="panel-body">
+            <% if(!username) { %>
+            <form action="/registration" method="POST">
+              Username
+              <input type="name" name="name">
+              Email
+              <input type="email" name="email">
+              Password
+              <input type="password" name="password">
+              <input type="submit" value="Submit">
+            </form>
+            <% } else { %>
+            Welcome: <strong><%= username %></strong></li>
+            <form action="/logout" method="POST">
+              <button type="submit" class="btn btn-warning" id="logout" style="display: inline-block">Logout</button>
+            </form>
+            <% } %>
+          </div>
+    </div>
+    </div>
+  </body>
+</html>
+
+

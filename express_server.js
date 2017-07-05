@@ -15,6 +15,19 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "userRandomID": {
+    id: "Nikolas",
+    email: "nikolas.clark@gmail.com",
+    password: "password"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
 
 function generateRandomString() {
   var string = "";
@@ -52,7 +65,31 @@ app.get("/urls/:id", function(req, res) {
   res.render("../urls_show", templateVar);
 });
 
-// posts
+// User Registration
+app.get("/registration", function(req, res){
+  let templateVar = {
+    urls: urlDatabase,
+    username: req.cookies["username"],
+    users: users,
+  };
+  res.render("../userRegistration", templateVar);
+});
+
+app.post("/registration", (req, res) => {
+  console.log(req.body["name"],req.body["email"], req.body["password"] )
+  let id = generateRandomString()
+  users[id] = {
+    name: req.body["name"],
+    email: req.body["email"],
+    password: req.body["password"]
+  };
+  res.cookie('username', req.body["name"], { maxAge: 900000})
+  console.log(users)
+  res.redirect("/urls")
+});
+
+
+// Main pages
 app.post("/urls", (req, res) => {
   console.log(req.body["longURL"]) // debug statement to see POST parameters
   urlDatabase[generateRandomString()] = req.body["longURL"];
