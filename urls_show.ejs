@@ -6,11 +6,20 @@
   </head>
   <body>
      <% include partials/_header %>
-     <h1> Hello </h1>
+     <div style="margin: 10% 20% 0 20%">
+
      <a href=<%= urls[shortURL] %>>
-      <h4 class="list-group-item-heading"> <%= urls[shortURL] %> </h4>
+     <h1>teenyTINY: <%= shortURL %> <h1>
+     <h3 class="list-group-item-heading"> <%= urls[shortURL] %> </h3>
      </a>
-      <p>Shortened link: <%= shortURL %> </p>
-      <br>
+    <div style="margin: 50px 200px 0px 0px">
+    <form action="/urls/<%= shortURL %>" method="POST" class="input-group input-group-lg">
+      <span class="input-group-addon" >Update Link</span>
+      <input name="newLongURL" type="text" class="form-control" placeholder="<%= urls[shortURL] %> " aria-describedby="sizing-addon1" >
+    </form>
+    </div>
+    </div?
   </body>
 </html>
+
+
