@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>TinyApp</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-  </head>
-  <body>
-    <% include partials/_header %>
-    <form action="/urls" method="POST" style="margin: 200px" class="input-group input-group-lg">
-            <span class="input-group-addon" id="sizing-addon1">SHORTEN YER LINK HERE</span>
-            <input name="longURL" type="text" class="form-control" placeholder="www.example.com" aria-describedby="sizing-addon1">
-    </form>
-  </body>
+<head>
+  <title>TinyApp</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+</head>
+<body>
+  <% include partials/_header %>
+  <form action="/urls" method="POST" style="margin: 200px" class="input-group input-group-lg">
+    <span class="input-group-addon" id="sizing-addon1">SHORTEN YER LINK HERE</span>
+    <input name="longURL" type="text" class="form-control" placeholder="www.example.com" aria-describedby="sizing-addon1">
+  </form>
+</body>
 </html>

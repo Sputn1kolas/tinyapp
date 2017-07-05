@@ -7,10 +7,17 @@
     <ul class="nav navbar-nav">
       <li><a href="/urls">home</a></li>
       <li><a href="/urls/new">Make a new URL</a></li>
-      <li><a href="/urls" class="dropdown">url list</a></li>
+      <li>
+        <form action="/login" method="POST" style="margins: 10px 0px 0px 0px">
+          Username
+         <input type="username" name="username">
+         <input type="submit" value="Submit">
+        </form>
+      </li>
+  <!--     <li><a href="/urls" class="dropdown">url list</a></li>
       <% for(url in urls) { %>
-        <li><a href="/urls/<%= url %>"> <%= url %> </a></li>
-      <% } %>
+      <li><a href="/urls/<%= url %>"> <%= url %> </a></li>
+      <% } %> -->
     </ul>
   </div>
 </nav>

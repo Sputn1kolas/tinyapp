@@ -1,9 +1,11 @@
 // int
 const express = require("express");
+const cookieParser = require('cookie-parser')
+const bodyParser = require("body-parser");
+
 const app = express();
 app.set("view engine", "ejs");
 const port = process.env.PORT || 8080;
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 
@@ -56,15 +58,15 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-    delete urlDatabase[req.params.id]
-    console.log("deleted...")
-    res.redirect("/urls")
+  delete urlDatabase[req.params.id]
+  console.log("deleted...")
+  res.redirect("/urls")
 })
 
 app.post("/urls/:id", (req, res) => {
-    urlDatabase[req.params.id] = req.body.newLongURL
-    console.log("long url updated...")
-    res.redirect("/urls")
+  urlDatabase[req.params.id] = req.body.newLongURL
+  console.log("long url updated...")
+  res.redirect("/urls")
 })
 
 app.get("/u/:shortURL", (req, res) => {

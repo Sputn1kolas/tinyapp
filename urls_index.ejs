@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>TinyApp</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-  </head>
-  <body>
-    <% include partials/_header %>
-     <div class="jumbotron">
-        <div style="margin: 0% 10% 0 10%">
-            <h1>Welcome to teenyTINYURL!</h1>
-            <p class="lead">Check out them below!</p>
-            <img src="http://www.jonathantneal.com/wp-content/uploads/2013/01/happy-doctor.png">
-        </div>
-     </div>
-     <div style="margin: 0% 20% 0 20%">
+<head>
+  <title>TinyApp</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+</head>
+<body>
+  <% include partials/_header %>
+  <div class="jumbotron">
+    <div style="margin: 0% 10% 0 10%">
+      <img src="http://www.jonathantneal.com/wp-content/uploads/2013/01/happy-doctor.png">
+      <h1>Welcome to teenyTINYURL!</h1>
+      <p class="lead">Check out them below!</p>
+    </div>
+  </div>
+  <div style="margin: 0% 20% 0 20%">
 
-      <% for(link in urls) { %>
-          <a href=urls/<%= link %>>
-            <h4 class="list-group-item-heading"> <%= urls[link] %></h4>
-          </a>
-          <p>Shortened link: <%= link %> </p>
+    <% for(link in urls) { %>
+    <a href=urls/<%= link %>>
+      <h4 class="list-group-item-heading"> <%= urls[link] %></h4>
+    </a>
+    <p>Shortened link: <%= link %> </p>
 
-      <form action="/urls/<%= link %>/delete" method="POST">
-        <button type="submit" class="btn btn-danger" id="shortURL"><span class="glyphicon glyphicon-trash"></span>   Delete</button>
-      </form>
-          <br/>
-          <br/>
-       <% } %>
-    <div style="margin: 20px 200px 0px 0px">
-    <form action="/urls" method="POST" class="input-group input-group-lg">
-            <span class="input-group-addon" id="sizing-addon1">SHORTEN YER LINK HERE</span>
-            <input name="longURL" type="text" class="form-control" placeholder="www.example.com" aria-describedby="sizing-addon1">
+    <form action="/urls/<%= link %>/delete" method="POST">
+      <button type="submit" class="btn btn-danger" id="shortURL"><span class="glyphicon glyphicon-trash"></span>   Delete</button>
     </form>
+    <br/>
+    <br/>
+    <% } %>
+    <div style="margin: 20px 200px 0px 0px">
+      <form action="/urls" method="POST" class="input-group input-group-lg">
+        <span class="input-group-addon" id="sizing-addon1">SHORTEN YER LINK HERE</span>
+        <input name="longURL" type="text" class="form-control" placeholder="www.example.com" aria-describedby="sizing-addon1">
+      </form>
     </div>
-    </div>
-  </body>
+  </div>
+</body>
 </html>
 
 
