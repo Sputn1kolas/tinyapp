@@ -15,16 +15,15 @@
           <p>Shortened link: <%= link %> </p>
 
       <form action="/urls/<%= link %>/delete" method="POST">
-        <button type="submit" class=".btn-danger" id="shortURL" >
+        <button type="submit" class=".btn-danger" id="shortURL"><span class="glyphicon glyphicon-trash"></span>  Delete</button>
       </form>
-
-
-          <br>
+          <br/>
+          <br/>
        <% } %>
-         <div class="input-group input-group-lg">
+    <form action="/urls" method="POST" style="margin: 40px" class="input-group input-group-lg">
             <span class="input-group-addon" id="sizing-addon1">SHORTEN YER LINK HERE</span>
-            <input type="text" class="form-control" placeholder="www.example.com" aria-describedby="sizing-addon1">
-        </div>
+            <input name="longURL" type="text" class="form-control" placeholder="www.example.com" aria-describedby="sizing-addon1">
+    </form>
     </div>
   </body>
 </html>
