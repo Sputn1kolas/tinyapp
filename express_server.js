@@ -15,6 +15,7 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+/// User Database Object
 const users = {
   "userRandomID": {
     id: "Nikolas",
@@ -28,7 +29,6 @@ const users = {
   }
 }
 
-
 function generateRandomString() {
   var string = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -39,6 +39,13 @@ function generateRandomString() {
   return string;
 }
 
+function getUsername(req) {
+  if(!req.cookies["user_id"]){
+    return ""
+  }
+  console.log(users[req.cookies["user_id"]])
+  return users[req.cookies["user_id"]]
+}
 
 // Defining pages
 // app.get("/", function(req, res){
@@ -49,18 +56,24 @@ function generateRandomString() {
 app.get("/urls", function(req, res){
   let templateVar = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: getUsername(req),
   };
   res.render("../urls_index", templateVar);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVar = {urls: urlDatabase, username: req.cookies["username"]};
+  let templateVar = {
+    urls: urlDatabase,
+    user: getUsername(req)
+  };
   res.render("../urls_new",templateVar);
 });
 
 app.get("/urls/:id", function(req, res) {
-  let templateVar = {urls: urlDatabase, username: req.cookies["username"]};
+  let templateVar = {
+    urls: urlDatabase,
+    user: getUsername(req)
+  };
   templateVar.shortURL = req.params.id,
   res.render("../urls_show", templateVar);
 });
@@ -69,22 +82,35 @@ app.get("/urls/:id", function(req, res) {
 app.get("/registration", function(req, res){
   let templateVar = {
     urls: urlDatabase,
-    username: req.cookies["username"],
-    users: users,
+    user: getUsername(req)
   };
   res.render("../userRegistration", templateVar);
 });
 
+function isIdDuplicate(email){
+  for(let id in users) {
+    if(email === users[id]["email"]){
+      return true
+    }
+  }
+  return false
+}
+
 app.post("/registration", (req, res) => {
-  console.log(req.body["name"],req.body["email"], req.body["password"] )
+  if(!req.body["name"] || !req.body["email"] || isIdDuplicate(req.body["email"])) {
+    console.log(400) //This needs to return 400 to the user...
+    res.redirect("/404")
+    return;
+  }
+
   let id = generateRandomString()
   users[id] = {
     name: req.body["name"],
     email: req.body["email"],
     password: req.body["password"]
   };
-  res.cookie('username', req.body["name"], { maxAge: 900000})
-  console.log(users)
+  res.cookie('user_id', id, { maxAge: 900000})
+  console.log(id)
   res.redirect("/urls")
 });
 
@@ -115,15 +141,15 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 // Login + posts cookie
-app.post("/login", (req, res) => {
-  console.log(req.body["username"])
-  res.cookie('username', req.body["username"], { maxAge: 900000})
-  res.redirect("/urls")
-});
+// app.post("/login", (req, res) => {
+//   console.log(req.body["username"])
+//   res.cookie('user_id', req.body["username"], { maxAge: 900000})
+//   res.redirect("/urls")
+// });
 
-//logout
+// logout + delete cookie
 app.post("/logout", (req, res) => {
-  res.clearCookie('username')
+  res.clearCookie('user_id')
   res.redirect("/urls")
   console.log("logged out!")
 });

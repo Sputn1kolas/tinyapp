@@ -10,7 +10,7 @@
      Good News Everyone! You can register as a user!
      <div class="panel panel-default" >
           <div class="panel-body">
-            <% if(!username) { %>
+            <% if(!user["name"]) { %>
             <form action="/registration" method="POST">
               Username
               <input type="name" name="name">
@@ -21,7 +21,7 @@
               <input type="submit" value="Submit">
             </form>
             <% } else { %>
-            Welcome: <strong><%= username %></strong></li>
+            Welcome: <strong><%= user["name"] %></strong></li>
             <form action="/logout" method="POST">
               <button type="submit" class="btn btn-warning" id="logout" style="display: inline-block">Logout</button>
             </form>
