@@ -1,8 +1,2 @@
-  function foo() {
-    var x = 1;
-    if (x === 1) {
-      let y = 2;
-    }
-    console.log('Value of y is ' + y);
-  }
-  foo();
+var fruits = ["Banana", "Orange", "Apple", "Mango", "Kiwi"];
+console.log(fruits.splice(3,1))
