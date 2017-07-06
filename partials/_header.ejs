@@ -1,6 +1,4 @@
-
-
-<nav class="navbar navbar-default">
+<nav class="navbar navbar-default" style="margin: 0% 0% 0% 0%">
   <div class="container-fluid">
     <div class="navbar-header">
       <a class="navbar-brand" href="/"><strong>teenyTINY url</strong></a>
@@ -8,18 +6,17 @@
     <ul class="nav navbar-nav">
       <li><a href="/urls">home</a></li>
       <li><a href="/urls/new">Make a new URL</a></li>
-      <li><a href="/registration">New User</a></li>
       <li>
-        <div class="panel panel-default" >
-            <% if(!user["name"]) { %>
+            <% if(!user) { %>
+            <li><a href="/registration">New User</a></li>
             <li><a href="/login"><strong>Login</strong></a></li>
             <% } else { %>
+            </div class="div col-sm-4">
             Welcome: <strong><%= user["name"] %></strong></li>
             <form action="/logout" method="POST">
               <button type="submit" class="btn btn-warning" id="logout" style="display: inline-block">Logout</button>
             </form>
             <% } %>
-        </div>
       </li>
     </ul>
   </div>

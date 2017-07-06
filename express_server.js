@@ -1,4 +1,6 @@
-// int
+
+///////////////////////////////////// Intiate Server ////////////////////////////////////////////
+
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
@@ -9,7 +11,16 @@ const port = process.env.PORT || 8080;
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 
-//Pseudo-Database
+
+// Get app to listen on port 8080
+app.listen(port, function(){
+  console.log(`Good News Everyone!, I'm listening... on port ${port}`)
+})
+
+///////////////////////////////////// Databases ////////////////////////////////////////////
+
+
+//Short URL -Database
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -18,24 +29,26 @@ let urlDatabase = {
 /// User Database Object
 const users = {
   "userRandomID": {
-    id: "Nikolas",
+    name: "Nikolas",
     email: "nikolas.clark@gmail.com",
     password: "password"
   },
  "user2RandomID": {
-    id: "user2RandomID",
+    name: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
 }
 
+
+///////////////////////////////////// Accessory Functions /////////////////////////////////
+
+
 function generateRandomString() {
   var string = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
   for (let i = 0; i < 7; i++)
     string += possible.charAt(Math.floor(Math.random() * possible.length));
-
   return string;
 }
 
@@ -43,7 +56,7 @@ function getUsername(req) {
   if(!req.cookies["user_id"]){
     return ""
   }
-  console.log(users[req.cookies["user_id"]])
+  // console.log("user object called", users[req.cookies["user_id"]])
   return users[req.cookies["user_id"]]
 }
 
@@ -57,7 +70,7 @@ function isIdDuplicate(email){
   return false
 }
 
-function EmailandPasswordForId(email, password){
+function emailandPasswordForId(email, password){
   for(let id in users) {
     if(email === users[id]["email"]) {
       if(password === users[id]["password"]){
@@ -65,6 +78,7 @@ function EmailandPasswordForId(email, password){
       }
     }
   }
+  return false
 }
 
 // Defining pages/views
@@ -72,25 +86,26 @@ function EmailandPasswordForId(email, password){
 //   res.end("I AM THE ROOT WEBPAGE, HELLOOO");
 // });
 
-// main page listing all the urls
+///////////////////////////////////// Main Views ////////////////////////////////////////////
+
+// Main URLS page
 app.get("/urls", function(req, res){
   let templateVar = {
     urls: urlDatabase,
     user: getUsername(req),
   };
+  console.log("renderin urls with.. ", templateVar)
   res.render("../urls_index", templateVar);
 });
 
-// page to create new urls
-app.get("/urls/new", (req, res) => {
-  let templateVar = {
-    urls: urlDatabase,
-    user: getUsername(req)
-  };
-  res.render("../urls_new",templateVar);
+app.post("/urls", (req, res) => {
+  console.log(req.body["longURL"]) // debug statement to see POST parameters
+  urlDatabase[generateRandomString()] = req.body["longURL"];
+  res.redirect("/urls")
+  console.log("302")
 });
 
-// unique page, that lists the tinyurl details.
+
 app.get("/urls/:id", function(req, res) {
   let templateVar = {
     urls: urlDatabase,
@@ -100,7 +115,41 @@ app.get("/urls/:id", function(req, res) {
   res.render("../urls_show", templateVar);
 });
 
-// User Registration
+///////////////////////////////////// Create or Delete tinyurls ////////////////////////////////////////////
+
+
+// View for creating urls
+app.get("/urls/new", (req, res) => {
+  let templateVar = {
+    urls: urlDatabase,
+    user: getUsername(req)
+  };
+  res.render("../urls_new",templateVar);
+});
+
+// Create new URL
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.newLongURL
+  console.log("long url updated...")
+  res.redirect("/urls")
+})
+
+// Delete the url
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id]
+  console.log("deleted...")
+  res.redirect("/urls")
+})
+
+// Redirect at /u/shorturl
+app.get("/u/:shortURL", (req, res) => {
+  res.redirect(urlDatabase[req.params.shortURL]);
+});
+
+
+///////////////////////////////////// User Registration ////////////////////////////////////////////
+
+
 app.get("/registration", function(req, res){
   let templateVar = {
     urls: urlDatabase,
@@ -109,34 +158,16 @@ app.get("/registration", function(req, res){
   res.render("../userRegistration", templateVar);
 });
 
-// login page, and the post response for it
-app.get("/login", function(req, res){
-  let templateVar = {
-    urls: urlDatabase,
-    user: getUsername(req)
-  };
-  res.render("../login", templateVar);
-});
-
-app.post("/login", (req, res) => {
-  let email = req.body["email"]
-  let password = req.body["password"]
-  let id = EmailandPasswordForId(email, password);
-  res.cookie('user_id', id, { maxAge: 900000})
-  console.log(id)
-  res.redirect("/urls")
-});
-
-
 // registration pagess
 app.post("/registration", (req, res) => {
-  if(!req.body["name"] || !req.body["email"] || isIdDuplicate(req.body["email"])) {
-    console.log(400) //This needs to return 400 to the user...
-    res.redirect("/404")
+  if(!req.body["name"] || !req.body["email"]) {
+    res.status(400).send("Error: Either your email or name is empty");
     return;
+  } else if(isIdDuplicate(req.body["email"])) {
+    res.status(400).send("Already Registered");
+    return
   }
-
-  let id = generateRandomString()
+let id = generateRandomString()
   users[id] = {
     name: req.body["name"],
     email: req.body["email"],
@@ -148,39 +179,31 @@ app.post("/registration", (req, res) => {
 });
 
 
-// Main pages
-app.post("/urls", (req, res) => {
-  console.log(req.body["longURL"]) // debug statement to see POST parameters
-  urlDatabase[generateRandomString()] = req.body["longURL"];
-  res.redirect("/urls")
-  console.log("302")
+/////////////////////////////////////// Login / Logout //////////////////////////////////////////////////////
+
+
+app.get("/login", function(req, res){
+  let templateVar = {
+    urls: urlDatabase,
+    user: getUsername(req)
+  };
+  res.render("../login", templateVar);
 });
 
-app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id]
-  console.log("deleted...")
-  res.redirect("/urls")
-})
-
-app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.newLongURL
-  console.log("long url updated...")
-  res.redirect("/urls")
-})
-
-app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+app.post("/login", (req, res) => {
+  let email = req.body["email"]
+  let password = req.body["password"]
+  let id = emailandPasswordForId(email, password);
+  if(id) {
+    console.log("id in db, logging in...", id)
+    res.cookie('user_id', id, { maxAge: 900000})
+    res.redirect("/urls")
+    return
+  }
+  res.status(403).send("Error: Email or Password not Correct");
 });
 
-
-// Login + posts cookie
-// app.post("/login", (req, res) => {
-//   console.log(req.body["username"])
-//   res.cookie('user_id', req.body["username"], { maxAge: 900000})
-//   res.redirect("/urls")
-// });
-
-// logout + delete cookie
+// Logout + delete cookie
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id')
   res.redirect("/urls")
@@ -188,7 +211,5 @@ app.post("/logout", (req, res) => {
 });
 
 
-// get app to listen on port 8080
-app.listen(port, function(){
-  console.log(`Good News Everyone!, I'm listening... on port ${port}`)
-})
+
+
