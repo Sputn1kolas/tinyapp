@@ -11,20 +11,14 @@
       <li><a href="/registration">New User</a></li>
       <li>
         <div class="panel panel-default" >
-          <div class="panel-body">
             <% if(!user["name"]) { %>
-            <form action="/login" method="POST">
-              Username
-              <input type="username" name="username">
-              <input type="submit" value="Submit">
-            </form>
+            <li><a href="/login"><strong>Login</strong></a></li>
             <% } else { %>
             Welcome: <strong><%= user["name"] %></strong></li>
             <form action="/logout" method="POST">
               <button type="submit" class="btn btn-warning" id="logout" style="display: inline-block">Logout</button>
             </form>
             <% } %>
-          </div>
         </div>
       </li>
     </ul>

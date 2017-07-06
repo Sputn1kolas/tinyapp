@@ -47,12 +47,32 @@ function getUsername(req) {
   return users[req.cookies["user_id"]]
 }
 
-// Defining pages
+
+function isIdDuplicate(email){
+  for(let id in users) {
+    if(email === users[id]["email"]){
+      return true
+    }
+  }
+  return false
+}
+
+function EmailandPasswordForId(email, password){
+  for(let id in users) {
+    if(email === users[id]["email"]) {
+      if(password === users[id]["password"]){
+        return id
+      }
+    }
+  }
+}
+
+// Defining pages/views
 // app.get("/", function(req, res){
 //   res.end("I AM THE ROOT WEBPAGE, HELLOOO");
 // });
 
-
+// main page listing all the urls
 app.get("/urls", function(req, res){
   let templateVar = {
     urls: urlDatabase,
@@ -61,6 +81,7 @@ app.get("/urls", function(req, res){
   res.render("../urls_index", templateVar);
 });
 
+// page to create new urls
 app.get("/urls/new", (req, res) => {
   let templateVar = {
     urls: urlDatabase,
@@ -69,6 +90,7 @@ app.get("/urls/new", (req, res) => {
   res.render("../urls_new",templateVar);
 });
 
+// unique page, that lists the tinyurl details.
 app.get("/urls/:id", function(req, res) {
   let templateVar = {
     urls: urlDatabase,
@@ -87,15 +109,26 @@ app.get("/registration", function(req, res){
   res.render("../userRegistration", templateVar);
 });
 
-function isIdDuplicate(email){
-  for(let id in users) {
-    if(email === users[id]["email"]){
-      return true
-    }
-  }
-  return false
-}
+// login page, and the post response for it
+app.get("/login", function(req, res){
+  let templateVar = {
+    urls: urlDatabase,
+    user: getUsername(req)
+  };
+  res.render("../login", templateVar);
+});
 
+app.post("/login", (req, res) => {
+  let email = req.body["email"]
+  let password = req.body["password"]
+  let id = EmailandPasswordForId(email, password);
+  res.cookie('user_id', id, { maxAge: 900000})
+  console.log(id)
+  res.redirect("/urls")
+});
+
+
+// registration pagess
 app.post("/registration", (req, res) => {
   if(!req.body["name"] || !req.body["email"] || isIdDuplicate(req.body["email"])) {
     console.log(400) //This needs to return 400 to the user...
