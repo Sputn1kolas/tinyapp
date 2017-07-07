@@ -4,6 +4,8 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
+
 
 const app = express();
 app.set("view engine", "ejs");
@@ -79,12 +81,10 @@ function isIdDuplicate(email){
   return false
 }
 
-function emailandPasswordForId(email, password){
+function emailForId(email){
   for(let id in users) {
     if(email === users[id]["email"]) {
-      if(password === users[id]["password"]){
-        return id
-      }
+      return id
     }
   }
   return false
@@ -200,9 +200,10 @@ let id = generateRandomString()
   users[id] = {
     name: req.body["name"],
     email: req.body["email"],
-    password: req.body["password"],
+    password: bcrypt.hashSync(req.body["password"],10),
     shortURLs: []
   };
+  console.log(users)
   res.cookie('user_id', id, { maxAge: 900000})
   res.redirect("/urls")
 });
@@ -223,9 +224,9 @@ app.get("/login", function(req, res){
 app.post("/login", (req, res) => {
   let email = req.body["email"]
   let password = req.body["password"]
-  let id = emailandPasswordForId(email, password);
-  if(id) {
-    console.log("id in db, logging in...", id)
+  let id = emailForId(email, password);
+  if(bcrypt.compareSync(password, users[id]["password"])){
+    console.log("id and password succesfull.. logging in...", id)
     res.cookie('user_id', id, { maxAge: 900000})
     res.redirect("/urls")
     return
