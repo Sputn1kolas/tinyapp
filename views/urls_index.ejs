@@ -5,32 +5,36 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 </head>
 <body>
-<% include partials/_header %>
-   <div class="jumbotron" style=" margin: 0% 0% 5% 0%">
+  <% include partials/_header %>
+  <div class="jumbotron" style=" margin: 0% 0% 5% 0%">
     <div style="margin: 0% 10% 0 10%">
-    <% if(user){ %>
-    <h2> Good News <%= user["name"] %> ! </h2>
-    <p class="lead">Your quark sized links are below!</p>
-    <% } %>
+      <% if(user){ %>
+      <h2> Good News <%= user["name"] %> ! </h2>
       <img src="http://www.jonathantneal.com/wp-content/uploads/2013/01/happy-doctor.png">
+      <p class="lead">Your quark sized links are below!</p>
+      <% } else { %>
+      <h2> Why not sign in? </h2>
+      <img src="http://t00.deviantart.net/DZ10PhykW_LOvNSIvMnqX9MdPnY=/fit-in/150x150/filters:no_upscale():origin()/pre03/f649/th/pre/f/2012/045/d/8/zoidberg_by_blizz21-d4pq4d6.png">
+      <p class="lead">Then your quark sized links would be below!</p>
+      <% } %>
     </div>
   </div>
   <div style="margin: 0% 20% 0 20%">
    <% if(urls !== {}) {
-      for(link in urls) { %>
-    <a href=urls/<%= link %>>
-      <h4 class="list-group-item-heading"> <%= urls[link] %></h4>
-    </a>
-    <p>Shortened link: <%= link %> </p>
+   for(link in urls) { %>
+   <a href=urls/<%= link %>>
+    <h4 class="list-group-item-heading"> <%= urls[link] %></h4>
+  </a>
+  <p>Shortened link: <%= link %> </p>
 
-    <form action="/urls/<%= link %>/delete" method="POST">
-      <button type="submit" class="btn btn-danger" id="shortURL"><span class="glyphicon glyphicon-trash"></span>   Delete</button>
-    </form>
-    <br/>
-    <br/>
-    <% }} %>
+  <form action="/urls/<%= link %>/delete" method="POST">
+    <button type="submit" class="btn btn-danger" id="shortURL"><span class="glyphicon glyphicon-trash"></span>   Delete</button>
+  </form>
+  <br/>
+  <br/>
+  <% }} %>
 
-  </div>
+</div>
 </body>
 </html>
 

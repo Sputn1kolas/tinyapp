@@ -54,16 +54,16 @@ function urlStatisticsInitalize(shortURL){
 
 // returns true if a user has permission to edit or delete a short url, false otherwise
 function permission(shortURL, req){
-if(req.session.user_id){
-  let user_id = req.session.user_id
-  let urlArray =  users[user_id]["shortURLs"]
-  for(var i = 0; i < urlArray.length; i++) {
-    if(shortURL === urlArray[i]){
-      return true
+  if(req.session.user_id){
+    let user_id = req.session.user_id
+    let urlArray =  users[user_id]["shortURLs"]
+    for(var i = 0; i < urlArray.length; i++) {
+      if(shortURL === urlArray[i]){
+        return true
+      }
     }
   }
-}
-return false
+  return false
 }
 
 // generate a random 7 ch string from lower case, uppercase or numbers
@@ -195,28 +195,6 @@ app.post("/urls/:id/delete", (req, res) => {
 })
 
 
-// Redirects to the long url given /u/shorurl, adds HTTP:// to all id's
-app.get("/u/:shortURL", (req, res) => {
-  let shortURL = req.params.shortURL
-  let longURL = urlDatabase[shortURL]
-  let user_id = req.session.user_id
-  let timestamp = new Date()
-  if("http://" === longURL.slice(0,7)){   //ensures all redirects are to a HTTP://
-    longURL = longURL.slice(7)
-  }
-  if("www." === longURL.slice(0,4)){   //ensures all redirects are to www.
-    longURL = longURL.slice(4)
-  }
-  urlStatisticsInitalize(shortURL)
-  urlStatistics[shortURL]["visits"] += 1 //iterates url statistics
-  if(!urlStatistics[shortURL]["visitedBy"][user_id]) {
-    urlStatistics[shortURL]["visitedBy"][user_id] = [] // adds each user an array, to log visits if it does not exist
-  }
-  urlStatistics[shortURL]["visitedBy"][user_id].push(timestamp)
-  urlStatistics[shortURL]["uniqueVisitors"] = calcUniqueVisitors(shortURL)
-  res.redirect(`http://www.${longURL}`)
-})
-
 
 ///////////////////////////////////// User Registration ////////////////////////////////////////////
 
@@ -331,6 +309,29 @@ app.get("/urls/:id", function(req, res) {
   }
   res.status(403).send("Error: You don't have permission to do that!")
 });
+
+
+// Redirects to the long url given /u/shorurl, adds HTTP:// to all id's
+app.get("/u/:shortURL", (req, res) => {
+  let shortURL = req.params.shortURL
+  let longURL = urlDatabase[shortURL]
+  let user_id = req.session.user_id
+  let timestamp = new Date()
+  if("http://" === longURL.slice(0,7)){   //ensures all redirects are to a HTTP://
+    longURL = longURL.slice(7)
+  }
+  if("www." === longURL.slice(0,4)){   //ensures all redirects are to www.
+    longURL = longURL.slice(4)
+  }
+  urlStatisticsInitalize(shortURL)
+  urlStatistics[shortURL]["visits"] += 1 //iterates url statistics
+  if(!urlStatistics[shortURL]["visitedBy"][user_id]) {
+    urlStatistics[shortURL]["visitedBy"][user_id] = [] // adds each user an array, to log visits if it does not exist
+  }
+  urlStatistics[shortURL]["visitedBy"][user_id].push(timestamp)
+  urlStatistics[shortURL]["uniqueVisitors"] = calcUniqueVisitors(shortURL)
+  res.redirect(`http://www.${longURL}`)
+})
 
 
 

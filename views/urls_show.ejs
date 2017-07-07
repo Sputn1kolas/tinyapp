@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>TinyApp</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-  </head>
-  <body>
-     <% include partials/_header %>
-     <div style="margin: 10% 20% 0 20%">
+<head>
+  <title>TinyApp</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+</head>
+<body>
+ <% include partials/_header %>
+ <div style="margin: 10% 20% 0 20%">
 
-     <h1>teenyTINY: <%= shortURL %> <h1>
-      <a href="/u/<%= shortURL %>">
+   <h1>teenyTINY: <%= shortURL %> <h1>
+    <a href="/u/<%= shortURL %>">
      <h3 class="list-group-item-heading"><%= urls[shortURL] %> </h3>
-     </a>
-     <h4> Visits: <%= urlStatistics["visits"] %> times </h4>
-         <h4> Unique Visitors: <%= urlStatistics["uniqueVisitors"] %> </h4>
-          <h4> Visited by:</h4>
-          <% for(user in urlStatistics["visitedBy"]) { %>
-            <h4>Id: <%= user %> </h4>
-            <% arrayLength = console.log(urlStatistics["visitedBy"][user].length) %>
-            <% for(var i = 0; i < urlStatistics["visitedBy"][user].length; i++) { %>
-            <p><%= urlStatistics["visitedBy"][user][i] %> </p>
-          <% }} %>
+   </a>
+   <h4> Visits: <%= urlStatistics["visits"] %> times </h4>
+   <h4> Unique Visitors: <%= urlStatistics["uniqueVisitors"] %> </h4>
+   <h4> Visited by:</h4>
+   <% for(user in urlStatistics["visitedBy"]) { %>
+   <h4>Id: <%= user %> </h4>
+   <% arrayLength = console.log(urlStatistics["visitedBy"][user].length) %>
+   <% for(var i = 0; i < urlStatistics["visitedBy"][user].length; i++) { %>
+   <p><%= urlStatistics["visitedBy"][user][i] %> </p>
+   <% }} %>
 
-    <div style="margin: 50px 200px 0px 0px">
+   <div style="margin: 50px 200px 0px 0px">
     <form action="/urls/<%= shortURL %>" method="POST" class="input-group input-group-lg">
       <span class="input-group-addon" >Update Link</span>
       <input name="newLongURL" type="text" class="form-control" placeholder="<%= urls[shortURL] %> " aria-describedby="sizing-addon1" >
     </form>
-    </div>
-    </div?
-  </body>
+  </div>
+  </div?
+</body>
 </html>
 
 
