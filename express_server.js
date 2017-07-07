@@ -2,6 +2,7 @@
 ///////////////////////////////////// Intiate Server ////////////////////////////////////////////
 
 const express = require("express");
+const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
@@ -11,17 +12,17 @@ const app = express();
 app.set("view engine", "ejs");
 const port = process.env.PORT || 8080;
 app.use(bodyParser.urlencoded({extended: true}));
+// app.use(cookieSession())
 app.use(cookieParser())
-
+app.use(cookieSession({ secret: 'Banannnas!', cookie: { maxAge: 60 * 60 * 1000 }}));
+const cookieOptions = ["rocks"]
 
 // Get app to listen on port 8080
 app.listen(port, function(){
   console.log(`Good News Everyone!, I'm listening... on port ${port}`)
 })
 
-// app.use(cookieSession) [
-// names:sesson,
-// key: key1]
+
 
 ///////////////////////////////////// Databases ////////////////////////////////////////////
 
@@ -38,18 +39,6 @@ const urlDatabase = {
 
 /// User Database Object
 const users = {
-  "007": {
-    name: "Nikolas",
-    email: "nikolas.clark@gmail.com",
-    password: "password",
-    shortURLs: ["b2xVn2"]
-  },
- "user": {
-    name: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-    shortURLs: ["9sm5xK"]
-  }
 }
 
 
@@ -65,10 +54,10 @@ function generateRandomString() {
 }
 
 function getUsername(req) {
-  if(!req.cookies["user_id"]){
+  if(!req.session.user_id){
     return ""
   }
-  return users[req.cookies["user_id"]]
+  return users[req.session.user_id]
 }
 
 
@@ -91,8 +80,9 @@ function emailForId(email){
 }
 
 function generateUserURLS(req) {
- if(req.cookies["user_id"]) {
-    const user_id = req.cookies["user_id"]
+ if(users[req.session.user_id]) {
+    const user_id = req.session.user_id
+    console.log(req.session.user_id)
     const urlArray = users[user_id]["shortURLs"]
     let urls = {}
     for(var i in urlArray) {
@@ -128,7 +118,7 @@ function removeFromUserURLS(user_id, shortURL){
 
 // View for creating urls
 app.get("/urls/new", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if(!req.session.user_id){
     res.redirect("/login")
   }
 
@@ -141,9 +131,9 @@ app.get("/urls/new", (req, res) => {
 
 // post new url to database
 app.post("/urls", (req, res) => {
-  console.log(req.cookies["user_id"])
+  console.log(req.session.user_id)
   const shortURL = generateRandomString()
-  const user = req.cookies["user_id"]
+  const user = req.session.user_id
   urlDatabase[shortURL] = req.body["longURL"];
   users[user]["shortURLs"].push(shortURL)
   res.status(301)
@@ -159,7 +149,7 @@ app.post("/urls/:id", (req, res) => {
 
 // Delete the url
 app.post("/urls/:id/delete", (req, res) => {
-  const user_id = req.cookies["user_id"]
+  const user_id = req.session.user_id
   const shortURL = req.params.id
   removeFromUserURLS(user_id, shortURL)
   console.log("deleted...")
@@ -204,7 +194,7 @@ let id = generateRandomString()
     shortURLs: []
   };
   console.log(users)
-  res.cookie('user_id', id, { maxAge: 900000})
+  req.session.user_id = id
   res.redirect("/urls")
 });
 
@@ -227,7 +217,7 @@ app.post("/login", (req, res) => {
   let id = emailForId(email, password);
   if(bcrypt.compareSync(password, users[id]["password"])){
     console.log("id and password succesfull.. logging in...", id)
-    res.cookie('user_id', id, { maxAge: 900000})
+    req.session.user_id = id
     res.redirect("/urls")
     return
   }
