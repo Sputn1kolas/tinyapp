@@ -157,8 +157,6 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls")
 })
 
-
-
 // Delete the url
 app.post("/urls/:id/delete", (req, res) => {
   const user_id = req.cookies["user_id"]
@@ -168,9 +166,13 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls")
 })
 
-// Redirect /u/shorturl
+// Redirect /u/shorturl, adds HTTP:// to all id's
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+  let longURL = urlDatabase[req.params.shortURL]
+  if("http://" === longURL.slice(0,7)){
+    longURL = longURL.slice(7);
+  }
+  res.redirect(`http://${longURL}`);
 });
 
 

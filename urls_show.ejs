@@ -8,10 +8,11 @@
      <% include partials/_header %>
      <div style="margin: 10% 20% 0 20%">
 
-     <a href=<%= urls[shortURL] %>>
      <h1>teenyTINY: <%= shortURL %> <h1>
-     <h3 class="list-group-item-heading"> <%= urls[shortURL] %> </h3>
+      <a href="/u/<%= shortURL %>">
+     <h3 class="list-group-item-heading"><%= urls[shortURL] %> </h3>
      </a>
+
     <div style="margin: 50px 200px 0px 0px">
     <form action="/urls/<%= shortURL %>" method="POST" class="input-group input-group-lg">
       <span class="input-group-addon" >Update Link</span>
