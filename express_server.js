@@ -1,24 +1,21 @@
-// known bugs: anyone can visit /urls/shortURL, or potentially delete over curl
-// password not being logged in properly...
-// address entered needs to have www. before the address
+// Known bugs: 2017/07/07 Error: Can't set headers after they are sent., when rendering
 
-///////////////////////////////////// Intiate Server ////////////////////////////////////////////
+///////////////////////////////////// Intiate Settings + Server ////////////////////////////////////////////
 
-const express = require("express");
+const express = require("express")
 const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser')
-const bodyParser = require("body-parser");
-const bcrypt = require('bcrypt');
-
-
-const app = express();
-app.set("view engine", "ejs");
-const port = process.env.PORT || 8080;
-app.use(bodyParser.urlencoded({extended: true}));
-// app.use(cookieSession())
-app.use(cookieParser())
-app.use(cookieSession({ secret: 'Banannnas!', cookie: { maxAge: 60 * 60 * 1000 }}));
+const bodyParser = require("body-parser")
+const bcrypt = require('bcrypt')
+const port = process.env.PORT || 8080
 const cookieOptions = ["rocks"]
+const app = express()
+
+
+app.set("view engine", "ejs")
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(cookieParser())
+app.use(cookieSession({ secret: 'Banannnas!', cookie: { maxAge: 60 * 60 * 1000 }}))
 
 // Get app to listen on port 8080
 app.listen(port, function(){
@@ -30,32 +27,55 @@ app.listen(port, function(){
 ///////////////////////////////////// Databases ////////////////////////////////////////////
 
 
-//Short URL -Database
-// now urls are objects, 2 breaks: redirect, ursl page, and urls
-// work on only user can edit, or delete []
-// then create url has the user attached.
-
+// Short URL "Database" objects
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-};
+}
 
-/// User Database Object
+/// User "Database" Object
 const users = {
 }
 
+// urlStatistics "Database" Object
+const urlStatistics = {
+}
 
 ///////////////////////////////////// Accessory Functions /////////////////////////////////
 
-
-function generateRandomString() {
-  var string = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 7; i++)
-    string += possible.charAt(Math.floor(Math.random() * possible.length));
-  return string;
+// creates a new statistics object within urlstatistics for a short URL
+function urlStatisticsInitalize(shortURL){
+  if(!urlStatistics[shortURL]){
+    urlStatistics[shortURL] = {
+      visits: 0,
+      visitedBy: {},
+      uniqueVisitors: 0
+    }
+  }
 }
 
+// returns true if a user has permission to edit or delete a short url, false otherwise
+function permission(shortURL, req){
+if(req.session.user_id){
+  let user_id = req.session.user_id
+  let urlArray =  users[user_id]["shortURLs"]
+  for(var i = 0; i < urlArray.length; i++) {
+    if(shortURL === urlArray[i]){
+      return true
+    }
+  }
+}
+return false
+}
+
+// generate a random 7 ch string from lower case, uppercase or numbers
+function generateRandomString() {
+  var string = ""
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  for (let i = 0; i < 7; i++)
+    string += possible.charAt(Math.floor(Math.random() * possible.length))
+  return string
+}
+
+// returns the username given the user_id
 function getUsername(req) {
   if(!req.session){
     return ""
@@ -63,16 +83,7 @@ function getUsername(req) {
   return users[req.session.user_id]
 }
 
-
-function isIdDuplicate(email){
-  for(let id in users) {
-    if(email === users[id]["email"]){
-      return true
-    }
-  }
-  return false
-}
-
+// returns the email if given an id
 function emailForId(email){
   for(let id in users) {
     if(email === users[id]["email"]) {
@@ -82,6 +93,17 @@ function emailForId(email){
   return false
 }
 
+// checks if an id exists in the db, if it does returns true, else false
+function isIdDuplicate(email){
+  for(let id in users) {
+    if(email === users[id]["email"]){
+      return true
+    }
+  }
+  return false
+}
+
+// returns an array containing the shortURLs belonging to the user signed in
 function generateUserURLS(req) {
  if(req.session) {
   const user_id = req.session.user_id
@@ -96,6 +118,7 @@ function generateUserURLS(req) {
 return {}
 }
 
+// if a cookied user does not exist in the db, it deletes the cookies
 function deleteOrphinCookies(req, res) {
   if(!getUsername(req)) {
     req.session = null
@@ -103,31 +126,36 @@ function deleteOrphinCookies(req, res) {
     }
   }
 
-  function removeFromUserURLS(user_id, shortURL){
-    let urlArray = users[user_id]["shortURLs"]
-    var index = urlArray.indexOf(shortURL)
-    delete users[user_id]["shortURLs"][index]
-  }
 
+// deletes a shortURL from the user's list of created urls
+function removeFromUserURLS(user_id, shortURL){
+  let urlArray = users[user_id]["shortURLs"]
+  var index = urlArray.indexOf(shortURL)
+  delete users[user_id]["shortURLs"][index]
+}
 
-  function calcUniqueVisitors(shortURL) {
-    return Object.keys(urlStatistics[shortURL]["visitedBy"]).length
-  }
+// returns how many unique visitors a partiular short url has.
+function calcUniqueVisitors(shortURL) {
+  return Object.keys(urlStatistics[shortURL]["visitedBy"]).length
+}
 
 
 
 ///////////////////////////////////// Create or Delete tinyurls ////////////////////////////////////////////
 
 
-// post new url to database
+// Creates a shortURL from a longURL and posts to database, short url added to user's list
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString()
-  const user = req.session.user_id
-  urlDatabase[shortURL] = req.body["longURL"];
-  users[user]["shortURLs"].push(shortURL)
-  res.status(301)
-  res.redirect("/urls")
-});
+  if(req.session.user_id){
+    const user = req.session.user_id
+    urlDatabase[shortURL] = req.body["longURL"]
+    users[user]["shortURLs"].push(shortURL)
+    res.status(301)
+    res.redirect("/urls")
+  }
+  res.status(403).send("Error: You don't have permission to do that!")
+})
 
 
 // View for creating urls
@@ -135,79 +163,79 @@ app.get("/urls/new", (req, res) => {
   if(!req.session.user_id){
     res.redirect("/login")
   }
-
   let templateVar = {
     urls: urlDatabase,
     user: getUsername(req)
-  };
-  res.render("../urls_new",templateVar);
-});
-
-
-// update  URL
-app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.newLongURL
-  console.log("long url updated...")
-  res.redirect("/urls")
+  }
+  res.render("urls_new",templateVar)
 })
 
-// Delete the url
+
+// View to change the a given short URL, if there is permission
+app.post("/urls/:id", (req, res) => {
+  const shortURL = req.params.id
+  if(permission(shortURL, req)){
+    urlDatabase[req.params.id] = req.body.newLongURL
+    console.log("long url updated...")
+    res.redirect("/urls")
+  }
+  res.status(403).send("Error: You don't have permission to do that!")
+})
+
+// Deletes the shortURL posted to :id
 app.post("/urls/:id/delete", (req, res) => {
   const user_id = req.session.user_id
   const shortURL = req.params.id
-  removeFromUserURLS(user_id, shortURL)
-  console.log("deleted...")
-  res.redirect("/urls")
+  if(permission(shortURL,req)){
+    removeFromUserURLS(user_id, shortURL)
+    console.log("deleted...")
+    res.redirect("/urls")
+  }
+  res.status(403).send("Error: You don't have permission to do that!")
 })
 
-function urlStatisticsInitalize(shortURL){
-  if(!urlStatistics[shortURL]){
-    urlStatistics[shortURL] = {
-      visits: 0,
-      visitedBy: {},
-      uniqueVisitors: 0
-    }
-  }
-}
 
-// Redirect /u/shorturl, adds HTTP:// to all id's
+// Redirects to the long url given /u/shorurl, adds HTTP:// to all id's
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL
   let longURL = urlDatabase[shortURL]
   let user_id = req.session.user_id
   let timestamp = new Date()
   if("http://" === longURL.slice(0,7)){   //ensures all redirects are to a HTTP://
-    longURL = longURL.slice(7);
+    longURL = longURL.slice(7)
   }
-  urlStatisticsInitalize(shortURL);
+  if("www." === longURL.slice(0,4)){   //ensures all redirects are to www.
+    longURL = longURL.slice(4)
+  }
+  urlStatisticsInitalize(shortURL)
   urlStatistics[shortURL]["visits"] += 1 //iterates url statistics
   if(!urlStatistics[shortURL]["visitedBy"][user_id]) {
     urlStatistics[shortURL]["visitedBy"][user_id] = [] // adds each user an array, to log visits if it does not exist
   }
   urlStatistics[shortURL]["visitedBy"][user_id].push(timestamp)
-  urlStatistics[shortURL]["uniqueVisitors"] = calcUniqueVisitors(shortURL);
-  res.redirect(`http://${longURL}`);
-});
+  urlStatistics[shortURL]["uniqueVisitors"] = calcUniqueVisitors(shortURL)
+  res.redirect(`http://www.${longURL}`)
+})
 
 
 ///////////////////////////////////// User Registration ////////////////////////////////////////////
 
-
+// creates registration view
 app.get("/registration", function(req, res){
   let templateVar = {
     urls: urlDatabase,
     user: getUsername(req)
-  };
-  res.render("../userRegistration", templateVar);
-});
+  }
+  res.render("userRegistration", templateVar)
+})
 
-// registration pagess
+// Posts a new registed user to the db
 app.post("/registration", (req, res) => {
   if(!req.body["name"] || !req.body["email"]) {
-    res.status(400).send("Error: Either your email or name is empty");
-    return;
+    res.status(400).send("Error: Either your email or name is empty")
+    return
   } else if(isIdDuplicate(req.body["email"])) {
-    res.status(400).send("Already Registered");
+    res.status(400).send("Already Registered")
     return
   }
   let id = generateRandomString()
@@ -231,7 +259,7 @@ app.get("/login", function(req, res){
     urls: urlDatabase,
     user: getUsername(req)
   };
-  res.render("../login", templateVar);
+  res.render("login", templateVar)
 });
 
 // finds the user in the DB and logs them in
@@ -239,7 +267,7 @@ app.post("/login", (req, res) => {
   let email = req.body["email"]
   let password = req.body["password"]
   if(!emailForId(email, password)) {
-    res.status(403).send("Error: Wrong Email Address");
+    res.status(403).send("Error: Wrong Email Address")
     return
   }
   let id = emailForId(email, password)
@@ -250,7 +278,7 @@ app.post("/login", (req, res) => {
     res.redirect("/urls")
     return
   }
-  res.status(403).send("Error: Password not Correct");
+  res.status(403).send("Error: Password not Correct")
 });
 
 // Logs out user by deleting cookie
@@ -260,19 +288,6 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls")
   console.log("logged out!")
 });
-///////////////////////////////////// Statistics ////////////////////////////////////////////
-
-// iterate the visits at urlStatistics[shortURL]["visits"] += 1
-// log the cookie, timestamp when the link is visitied
-// add user_id cookie to "visited by" if it doesn't exist, with an empty array
-// at end of for loop push the timestamp onto the user_ID
-// call uniqueVisitors(shortURL)
-// provide urlStatistics to urls_show
-// display the results in urlStatistics
-
-const urlStatistics = {
-}
-
 
 
 ///////////////////////////////////// Main Views ////////////////////////////////////////////
@@ -284,9 +299,9 @@ app.get("/", function(req, res){
   let templateVar = {
     user: getUsername(req),
     urls: urls
-  };
-  res.render("../home", templateVar);
-});
+  }
+  res.render("home", templateVar)
+})
 
 
 // Main URLS page
@@ -296,22 +311,25 @@ app.get("/urls", function(req, res){
   let templateVar = {
     user: getUsername(req),
     urls: urls
-  };
-  res.render("../urls_index", templateVar);
-});
+  }
+  res.render("urls_index", templateVar)
+})
 
 // go to existing tiny url
 app.get("/urls/:id", function(req, res) {
-  let shortURL = req.params.id;
-  urlStatisticsInitalize(shortURL);
-  console.log("the short url is...", shortURL)
-  let templateVar = {
-    urls: urlDatabase,
-    user: getUsername(req),
-    shortURL: req.params.id,
-    urlStatistics: urlStatistics[req.params.id]
-  };
-  res.render("../urls_show", templateVar);
+  let shortURL = req.params.id
+  if(permission(shortURL, req)){
+    urlStatisticsInitalize(shortURL)
+    console.log("the short url is...", shortURL)
+    let templateVar = {
+      urls: urlDatabase,
+      user: getUsername(req),
+      shortURL: req.params.id,
+      urlStatistics: urlStatistics[req.params.id]
+    }
+    res.render("urls_show", templateVar)
+  }
+  res.status(403).send("Error: You don't have permission to do that!")
 });
 
 
