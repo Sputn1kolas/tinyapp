@@ -109,10 +109,12 @@ function removeFromUserURLS(user_id, shortURL){
   delete users[user_id]["shortURLs"][index]
 }
 
-// Defining pages/views
-// app.get("/", function(req, res){
-//   res.end("I AM THE ROOT WEBPAGE, HELLOOO");
-// });
+
+function calcUniqueVisitors(shortURL) {
+  return Object.keys(urlStatistics[shortURL]["visitedBy"]).length
+}
+
+
 
 ///////////////////////////////////// Create or Delete tinyurls ////////////////////////////////////////////
 
@@ -159,12 +161,33 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls")
 })
 
+function urlStatisticsInitalize(shortURL){
+  if(!urlStatistics[shortURL]){
+    urlStatistics[shortURL] = {
+      visits: 0,
+      visitedBy: {},
+      uniqueVisitors: 0
+    }
+  }
+}
+
 // Redirect /u/shorturl, adds HTTP:// to all id's
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL]
-  if("http://" === longURL.slice(0,7)){
+  let shortURL = req.params.shortURL
+  let longURL = urlDatabase[shortURL]
+  let user_id = req.session.user_id
+  let timestamp = req.headers["Date"]
+  if("http://" === longURL.slice(0,7)){   //ensures all redirects are to a HTTP://
     longURL = longURL.slice(7);
   }
+  urlStatisticsInitalize(shortURL);
+  urlStatistics[shortURL]["visits"] += 1 //iterates url statistics
+  if(!urlStatistics[shortURL]["visitedBy"][user_id]) {
+    urlStatistics[shortURL]["visitedBy"][user_id] = []
+  }
+  urlStatistics[shortURL]["visitedBy"][user_id].push(timestamp)
+  urlStatistics[shortURL]["uniqueVisitors"] = calcUniqueVisitors(shortURL);
+  console.log(urlStatistics);
   res.redirect(`http://${longURL}`);
 });
 
@@ -202,7 +225,8 @@ let id = generateRandomString()
 });
 
 
-/////////////////////////////////////// Login / Logout //////////////////////////////////////////////////////
+/////////////////////////////////////// Login / Logout ////////////////////////////////////////////
+
 
 // creates the login view
 app.get("/login", function(req, res){
@@ -236,15 +260,16 @@ app.post("/logout", (req, res) => {
 });
 ///////////////////////////////////// Statistics ////////////////////////////////////////////
 
-const urlStatistics = {
-  "b2xVn2": {
-    visits: 0,
-    visitedBy: [],
-    uniqueVisitors: function(){
+// iterate the visits at urlStatistics[shortURL]["visits"] += 1
+// log the cookie, timestamp when the link is visitied
+// add user_id cookie to "visited by" if it doesn't exist, with an empty array
+// at end of for loop push the timestamp onto the user_ID
+// call uniqueVisitors(shortURL)
+// provide urlStatistics to urls_show
+// display the results in urlStatistics
 
-    }
-  }
-};
+const urlStatistics = {
+}
 
 
 
@@ -279,9 +304,9 @@ app.get("/urls", function(req, res){
 app.get("/urls/:id", function(req, res) {
   let templateVar = {
     urls: urlDatabase,
-    user: getUsername(req)
+    user: getUsername(req),
+    shortURL: req.params.id
   };
-  templateVar.shortURL = req.params.id,
   res.render("../urls_show", templateVar);
 });
 
