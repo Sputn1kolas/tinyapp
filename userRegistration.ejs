@@ -10,7 +10,7 @@
      Good News Everyone! You can register as a user!
      <div class="panel panel-default" >
           <div class="panel-body">
-            <% if(!user["name"]) { %>
+            <% if(!user) { %>
             <form action="/registration" method="POST">
               Username
               <input type="name" name="name">

@@ -9,7 +9,7 @@
       <div class="panel panel-default" >
       <h2> Please Login if you want to Create or Edit teenyTINY URLS</h2>
       <div class="panel-body">
-        <% if(!user["name"]) { %>
+        <% if(!user) { %>
         <form action="/login" method="POST">
             Email
           <input type="email" name="email">

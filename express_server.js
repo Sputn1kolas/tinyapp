@@ -54,7 +54,7 @@ function generateRandomString() {
 }
 
 function getUsername(req) {
-  if(!req.session.user_id){
+  if(!req.session){
     return ""
   }
   return users[req.session.user_id]
@@ -80,7 +80,7 @@ function emailForId(email){
 }
 
 function generateUserURLS(req) {
- if(users[req.session.user_id]) {
+ if(req.session) {
     const user_id = req.session.user_id
     console.log(req.session.user_id)
     const urlArray = users[user_id]["shortURLs"]
@@ -97,7 +97,8 @@ function generateUserURLS(req) {
 
 function deleteOrphinCookies(req, res) {
   if(!getUsername(req)) {
-      res.clearCookie('user_id')
+    req.session = null
+      // res.clearCookie('user_id')
   }
 }
 
@@ -116,6 +117,18 @@ function removeFromUserURLS(user_id, shortURL){
 ///////////////////////////////////// Create or Delete tinyurls ////////////////////////////////////////////
 
 
+// post new url to database
+app.post("/urls", (req, res) => {
+  console.log(req.session.user_id)
+  const shortURL = generateRandomString()
+  const user = req.session.user_id
+  urlDatabase[shortURL] = req.body["longURL"];
+  users[user]["shortURLs"].push(shortURL)
+  res.status(301)
+  res.redirect("/urls")
+});
+
+
 // View for creating urls
 app.get("/urls/new", (req, res) => {
   if(!req.session.user_id){
@@ -129,16 +142,6 @@ app.get("/urls/new", (req, res) => {
   res.render("../urls_new",templateVar);
 });
 
-// post new url to database
-app.post("/urls", (req, res) => {
-  console.log(req.session.user_id)
-  const shortURL = generateRandomString()
-  const user = req.session.user_id
-  urlDatabase[shortURL] = req.body["longURL"];
-  users[user]["shortURLs"].push(shortURL)
-  res.status(301)
-  res.redirect("/urls")
-});
 
 // update  URL
 app.post("/urls/:id", (req, res) => {
@@ -226,13 +229,38 @@ app.post("/login", (req, res) => {
 
 // Logs out user by deleting cookie
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id')
+  // res.clearCookie('user_id')
+  req.session = null
   res.redirect("/urls")
   console.log("logged out!")
 });
+///////////////////////////////////// Statistics ////////////////////////////////////////////
+
+const urlStatistics = {
+  "b2xVn2": {
+    visits: 0,
+    visitedBy: [],
+    uniqueVisitors: function(){
+
+    }
+  }
+};
+
 
 
 ///////////////////////////////////// Main Views ////////////////////////////////////////////
+
+// Home Page
+app.get("/", function(req, res){
+  deleteOrphinCookies(req, res)
+  let urls = generateUserURLS(req)
+  console.log("the /urls get url object is...", urls)
+  let templateVar = {
+    user: getUsername(req),
+    urls: urls
+  };
+  res.render("../home", templateVar);
+});
 
 
 // Main URLS page
