@@ -1,3 +1,6 @@
+// known bugs: anyone can visit /urls/shortURL, or potentially delete over curl
+// password not being logged in properly...
+// address entered needs to have www. before the address
 
 ///////////////////////////////////// Intiate Server ////////////////////////////////////////////
 
@@ -81,38 +84,35 @@ function emailForId(email){
 
 function generateUserURLS(req) {
  if(req.session) {
-    const user_id = req.session.user_id
-    console.log(req.session.user_id)
-    const urlArray = users[user_id]["shortURLs"]
-    let urls = {}
-    for(var i in urlArray) {
-      const shortURL = urlArray[i]
-      console.log(urlDatabase[shortURL])
-      urls[shortURL] = urlDatabase[shortURL]
-    }
-    return urls
+  const user_id = req.session.user_id
+  const urlArray = users[user_id]["shortURLs"]
+  let urls = {}
+  for(var i in urlArray) {
+    const shortURL = urlArray[i]
+    urls[shortURL] = urlDatabase[shortURL]
   }
-  return {}
+  return urls
+}
+return {}
 }
 
 function deleteOrphinCookies(req, res) {
   if(!getUsername(req)) {
     req.session = null
       // res.clearCookie('user_id')
+    }
   }
-}
 
-function removeFromUserURLS(user_id, shortURL){
-  console.log(user_id)
-  let urlArray = users[user_id]["shortURLs"]
-  var index = urlArray.indexOf(shortURL)
-  delete users[user_id]["shortURLs"][index]
-}
+  function removeFromUserURLS(user_id, shortURL){
+    let urlArray = users[user_id]["shortURLs"]
+    var index = urlArray.indexOf(shortURL)
+    delete users[user_id]["shortURLs"][index]
+  }
 
 
-function calcUniqueVisitors(shortURL) {
-  return Object.keys(urlStatistics[shortURL]["visitedBy"]).length
-}
+  function calcUniqueVisitors(shortURL) {
+    return Object.keys(urlStatistics[shortURL]["visitedBy"]).length
+  }
 
 
 
@@ -121,7 +121,6 @@ function calcUniqueVisitors(shortURL) {
 
 // post new url to database
 app.post("/urls", (req, res) => {
-  console.log(req.session.user_id)
   const shortURL = generateRandomString()
   const user = req.session.user_id
   urlDatabase[shortURL] = req.body["longURL"];
@@ -176,18 +175,17 @@ app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL
   let longURL = urlDatabase[shortURL]
   let user_id = req.session.user_id
-  let timestamp = req.headers["Date"]
+  let timestamp = new Date()
   if("http://" === longURL.slice(0,7)){   //ensures all redirects are to a HTTP://
     longURL = longURL.slice(7);
   }
   urlStatisticsInitalize(shortURL);
   urlStatistics[shortURL]["visits"] += 1 //iterates url statistics
   if(!urlStatistics[shortURL]["visitedBy"][user_id]) {
-    urlStatistics[shortURL]["visitedBy"][user_id] = []
+    urlStatistics[shortURL]["visitedBy"][user_id] = [] // adds each user an array, to log visits if it does not exist
   }
   urlStatistics[shortURL]["visitedBy"][user_id].push(timestamp)
   urlStatistics[shortURL]["uniqueVisitors"] = calcUniqueVisitors(shortURL);
-  console.log(urlStatistics);
   res.redirect(`http://${longURL}`);
 });
 
@@ -212,14 +210,13 @@ app.post("/registration", (req, res) => {
     res.status(400).send("Already Registered");
     return
   }
-let id = generateRandomString()
+  let id = generateRandomString()
   users[id] = {
     name: req.body["name"],
     email: req.body["email"],
     password: bcrypt.hashSync(req.body["password"],10),
     shortURLs: []
   };
-  console.log(users)
   req.session.user_id = id
   res.redirect("/urls")
 });
@@ -241,14 +238,19 @@ app.get("/login", function(req, res){
 app.post("/login", (req, res) => {
   let email = req.body["email"]
   let password = req.body["password"]
-  let id = emailForId(email, password);
-  if(bcrypt.compareSync(password, users[id]["password"])){
+  if(!emailForId(email, password)) {
+    res.status(403).send("Error: Wrong Email Address");
+    return
+  }
+  let id = emailForId(email, password)
+  console.log(bcrypt.compareSync(password, users[id]["password"]))
+  if(bcrypt.compareSync(password, users[id]["password"])) {
     console.log("id and password succesfull.. logging in...", id)
     req.session.user_id = id
     res.redirect("/urls")
     return
   }
-  res.status(403).send("Error: Email or Password not Correct");
+  res.status(403).send("Error: Password not Correct");
 });
 
 // Logs out user by deleting cookie
@@ -279,7 +281,6 @@ const urlStatistics = {
 app.get("/", function(req, res){
   deleteOrphinCookies(req, res)
   let urls = generateUserURLS(req)
-  console.log("the /urls get url object is...", urls)
   let templateVar = {
     user: getUsername(req),
     urls: urls
@@ -292,7 +293,6 @@ app.get("/", function(req, res){
 app.get("/urls", function(req, res){
   deleteOrphinCookies(req, res)
   let urls = generateUserURLS(req)
-  console.log("the /urls get url object is...", urls)
   let templateVar = {
     user: getUsername(req),
     urls: urls
@@ -302,10 +302,14 @@ app.get("/urls", function(req, res){
 
 // go to existing tiny url
 app.get("/urls/:id", function(req, res) {
+  let shortURL = req.params.id;
+  urlStatisticsInitalize(shortURL);
+  console.log("the short url is...", shortURL)
   let templateVar = {
     urls: urlDatabase,
     user: getUsername(req),
-    shortURL: req.params.id
+    shortURL: req.params.id,
+    urlStatistics: urlStatistics[req.params.id]
   };
   res.render("../urls_show", templateVar);
 });
